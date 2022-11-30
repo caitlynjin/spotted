@@ -1,0 +1,6 @@
+framework module Pods_spotted {
+  umbrella header "Pods-spotted-umbrella.h"
+
+  export *
+  module * { export * }
+}
