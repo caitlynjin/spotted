@@ -1,0 +1,20 @@
+PODS:
+  - Alamofire (5.6.4)
+  - SwiftyCam (4.0.0)
+
+DEPENDENCIES:
+  - Alamofire
+  - SwiftyCam
+
+SPEC REPOS:
+  trunk:
+    - Alamofire
+    - SwiftyCam
+
+SPEC CHECKSUMS:
+  Alamofire: 4e95d97098eacb88856099c4fc79b526a299e48c
+  SwiftyCam: 6e57914771d972fbe508e759dc9d0150a44a93fd
+
+PODFILE CHECKSUM: e3c7e35d3f407dc58605d3adc89252e765bcd3d4
+
+COCOAPODS: 1.11.3
