@@ -1,0 +1,16 @@
+PODS:
+  - SwiftyCam (4.0.0)
+
+DEPENDENCIES:
+  - SwiftyCam
+
+SPEC REPOS:
+  trunk:
+    - SwiftyCam
+
+SPEC CHECKSUMS:
+  SwiftyCam: 6e57914771d972fbe508e759dc9d0150a44a93fd
+
+PODFILE CHECKSUM: 83b5b0c14057898995dccc174fc10b30f0b4bc72
+
+COCOAPODS: 1.11.3
