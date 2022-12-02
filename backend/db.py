@@ -1,18 +1,11 @@
+import hashlib
+import bcrypt
+import os
+import datetime
 from flask_sqlalchemy import SQLAlchemy
 
 db = SQLAlchemy()
 
-# Leaderboard
-# First
-# Second
-# Third
-
-# your classes here
-
-# User
-# Rankings
-# Login
-# Profile Picture
 
 friendship = db.Table("friendship", db.Model.metadata,
                       db.Column("friendship_id", db.Integer,
@@ -39,22 +32,59 @@ target_of_assoc = db.Table("association_target_of", db.Model.metadata,
 class User(db.Model):
     __tablename__ = "user"
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+
+    # Profile information
     name = db.Column(db.String, nullable=False)
-    university = db.Column(db.String, default="")
+    university = db.Column(db.String, default="Cornell")
     grade = db.Column(db.Integer, default=0)
+
+    # Social information
     comments = db.relationship("Comment", cascade="delete")
     posts = db.relationship("Post", cascade="delete")
-    game = db.Column(db.Integer, db.ForeignKey("game.id"))
-    stats = db.Column(db.Integer, db.ForeignKey("stats.id"))
     friends = db.relationship("User",
                               secondary=friendship,
                               primaryjoin=id == friendship.c.main_id,
                               secondaryjoin=id == friendship.c.friend_id,
                               back_populates="friends")
+
+    # Game information
+    game = db.Column(db.Integer, db.ForeignKey("game.id"))
+    stats = db.Column(db.Integer, default=0)
     target_of_card = db.relationship(
         "Card", secondary=target_of_assoc, back_populates="belong")
     target_card = db.relationship(
         "Card", secondary=target_assoc, back_populates="target")
+
+    # authentication information
+    email = db.Column(db.String, nullable=False, unique=True)
+    password_digest = db.Column(db.String, nullable=False)
+
+    # authentication session information
+    session_token = db.Column(db.String, nullable=False, unique=True)
+    session_expiration = db.Column(db.DateTime, nullable=False)
+    update_token = db.Column(db.String, nullable=False, unique=True)
+
+    def __init__(self, **kwargs):
+        """
+        Initializes a User object
+        """
+        # Default inputs for the user information
+        self.name = "No input"
+        self.university = "Cornell University"
+        self.grade = 0
+        self.comments = []
+        self.posts = []
+        self.friends = []
+        self.game = 1
+        self.stats = 0
+        self.target_card = []
+        self.target_of_card = []
+
+        # store the inputted registration information
+        self.email = kwargs.get("email")
+        self.password_digest = bcrypt.hashpw(kwargs.get(
+            "password").encode("utf8"), bcrypt.gensalt(rounds=13))
+        self.renew_session()
 
     def serialize_profile(self):
         """
@@ -92,22 +122,59 @@ class User(db.Model):
             "target_of_card": [t.serialize() for t in self.target_of_card],
             "target_card": [t.serialize() for t in self.target_card],
             "game": Game.query.filter_by(id=self.game).first().serialize_info(),
-            "stats": Stats.query.filter_by(id=self.stats).first().serialize()
+            "stats": self.stats
         }
 
-    # def init_stats(self):
-    #     """Initializes the stats id to match user id"""
-    #     self.stats = self.id
+    # Authentication functions
+
+    def _urlsafe_base_64(self):
+        """
+        Randomly generates hashed tokens (used for session/update tokens)
+        """
+        return hashlib.sha1(os.urandom(64)).hexdigest()
+
+    def renew_session(self):
+        """
+        Renews the sessions, i.e.
+        1. Creates a new session token
+        2. Sets the expiration time of the session to be a day from now
+        3. Creates a new update token
+        """
+        self.session_token = self._urlsafe_base_64()
+        self.session_expiration = datetime.datetime.now() + datetime.timedelta(days=1)
+        self.update_token = self._urlsafe_base_64()
+
+    def verify_password(self, password):
+        """
+        Verifies the password of a user
+        """
+        return bcrypt.checkpw(password.encode("utf8"), self.password_digest)
+
+    def verify_session_token(self, session_token):
+        """
+        Verifies the session token of a user
+        """
+        return session_token == self.session_token and datetime.datetime.now() < self.session_expiration
+
+    def verify_update_token(self, update_token):
+        """
+        Verifies the update token of a user
+        """
+        return update_token == self.update_token
 
 
 class Game(db.Model):
     __tablename__ = "game"
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    # Include a leaderboard
     name = db.Column(db.String, default="none", nullable=False)
     users = db.relationship("User", cascade="delete")
     is_private = db.Column(db.Boolean, nullable=False)
     cards = db.relationship("Card", cascade="delete")
+
+    # Leaderboard information, should be updated
+    # first = db.Column(db.Integer, db.ForeignKey("user.id"))
+    # second = db.Column(db.Integer, db.ForeignKey("user.id"))
+    # third = db.Column(db.Integer, db.ForeignKey("user.id"))
 
     def serialize_info(self):
         """
@@ -119,6 +186,16 @@ class Game(db.Model):
             "is_private": self.is_private
         }
 
+    # def serialize_leaderboard(self):
+    #     """
+    #     Serializes the profiles of the users on the leaderboard
+    #     """
+    #     return {
+    #         "first": User.query.filter_by(id=self.first).first().serialize_profile(),
+    #         "second": User.query.filter_by(id=self.second).first().serialize_profile(),
+    #         "third": User.query.filter_by(id=self.third).first().serialize_profile()
+    #     }
+
     def init_public_game():
         """Initializes a public game that will have id=0"""
         new_game = Game(
@@ -126,6 +203,7 @@ class Game(db.Model):
             users=[],
             is_private=False,
             cards=[]
+            # add leaderboard
         )
         db.session.add(new_game)
         db.session.flush()
@@ -196,28 +274,3 @@ class Comment (db.Model):
             "time": self.time,
             "contents": self.contents
         }
-
-
-class Stats (db.Model):
-    __tablename__ = "stats"
-    id = db.Column(db.Integer, primary_key=True)
-    total = db.Column(db.Integer, default=0)
-
-    def serialize(self):
-        """
-        Serializes the stats of the user
-        """
-        return {
-            "id": self.id,
-            "total": self.total
-        }
-
-    def init_stats():
-        """Initializes the stats for a first time user"""
-        new_stats = Stats(
-            total=0
-        )
-        db.session.add(new_stats)
-        db.session.flush()
-        db.session.commit()
-        return new_stats.id
