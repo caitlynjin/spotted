@@ -52,8 +52,10 @@ class User(db.Model):
     stats = db.Column(db.Integer, default=0)
     target_of_card = db.relationship(
         "Card", secondary=target_of_assoc, back_populates="belong")
+    # The card that contains this user as the target
     target_card = db.relationship(
         "Card", secondary=target_assoc, back_populates="target")
+    # The card that the user has to spot
 
     # authentication information
     email = db.Column(db.String, nullable=False, unique=True)

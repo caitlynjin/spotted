@@ -55,7 +55,7 @@ def extract_token(request):
 @app.route("/")
 def greeting():
     """Endpoint for greeting user by reading from .env file"""
-    return "Welcome to" + os.environ["NAME"] + "! This game is created by "\
+    return "Welcome to " + os.environ["NAME"] + "! /nThis game is created by "\
         + os.environ["DESIGN"] + ", " + \
         os.environ["FRONTEND"] + ", " + os.environ["BACKEND"]
 
@@ -193,7 +193,7 @@ def create_user():
 
 @app.route("/api/user/<int:user_id>/", methods=['DELETE'])
 def delete_user(user_id):
-    """Endpoint to delete a post by id with verified credentials"""
+    """Endpoint to delete a user by id with verified credentials"""
     success, session_token = extract_token(request)
 
     if not success:
@@ -230,7 +230,7 @@ def get_user_game(user_id):
 
 
 @app.route("/api/user/<int:user_id>/profile", methods=['POST'])
-def get_update_user_profile(user_id):
+def update_user_profile(user_id):
     """Endpoint to update user profile after verifying credentials"""
     success, session_token = extract_token(request)
 
@@ -250,7 +250,7 @@ def get_update_user_profile(user_id):
 
 
 @app.route("/api/user/<int:user_id>/friend/", methods=['POST'])
-def get_update_user_friend(user_id):
+def update_user_friend(user_id):
     """Endpoint to add friend to an user after verifying credentials"""
     success, session_token = extract_token(request)
 
@@ -274,7 +274,7 @@ def get_update_user_friend(user_id):
 
 
 @app.route("/api/user/<int:user_id>/game/", methods=['POST'])
-def get_update_user_game(user_id):
+def update_user_game(user_id):
     """Endpoint to change game for an user after verifying credentials"""
 
     success, session_token = extract_token(request)
