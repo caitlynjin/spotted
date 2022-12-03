@@ -338,6 +338,13 @@ def create_post(user_id):
     db.session.commit()
     return success_response(new_post.serialize())
 
+@app.route("/api/post/")
+def get_all_posts():
+    """Endpoint to get all posts of all users"""
+    posts = []
+    for p in Post.query.all():
+        posts.append(p.serialize())
+    return success_response({"posts": posts})
 
 @app.route("/api/post/<int:user_id>/")
 def get_posts(user_id):
