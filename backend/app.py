@@ -185,7 +185,7 @@ def create_user():
 
     user.name = name
     user.university = body.get('university', user.university)
-    user.grade = body.get('university', user.grade)
+    user.grade = body.get('grade', user.grade)
 
     db.session.commit()
     return success_response(user.serialize_profile(), 201)
