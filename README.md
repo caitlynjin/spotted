@@ -6,10 +6,10 @@ An inclusive multiplayer target game inspired by the live-action game Assassin--
 
   Notable features:
   
-  - implements a custom camera view controller (main view when entering app); capture button, front & rear camera functionality, button to    
+  - Implements a custom camera view controller (main view when entering app); capture button, front & rear camera functionality, button to    
     activate/deactivate flash
   - TabBarController to navigate between five main ViewControllers (instructions, feed, camera, leaderboard, & profile)
-  - popups that display information about the user and their target
+  - Popups that display information about the user and their target
 
 # Some screenshots of our app
 
